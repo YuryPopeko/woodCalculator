@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Калькулятор</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<link rel="stylesheet" type="text/css" href="calculator.css">
+</head>
+<body class="calculator">
+	<main class="container">
+		<h1 class="wrapper">Калькулятор расчета досок</h1>
+		<section class="unit">
+			<h2 class="wrapper">Расчет объема в кубометрах по размерам одной единицы продукции</h2>
+			<form name="volume">
+				<div class="wrapper">
+					<hr>
+					<span>Единица измерения:</span>
+					<input type="radio" name="units" id="cm" hidden checked>
+					<label for="cm">Сантиметры</label>
+					<input type="radio" name="units" id="mm" hidden>
+					<label for="mm">Миллиметры</label>
+					<div class="clearfix"></div>
+					<label>Длина:<br><input type="tel" name="length" placeholder="Введите длину" required></label>
+					<label>Ширина:<br><input type="tel" name="width" placeholder="Введите ширину" required></label>
+					<label>Высота:<br><input type="tel" name="height" placeholder="Введите высоту" required></label>
+					<label>Количество:<br><input type="tel" name="quantity" placeholder="Введите количество" required></label>
+					<label>Цена за кубометр:<br><input type="tel" name="price" placeholder="Введите цену" required></label>
+					<label>Точность вычисления:<br><input type="range" min="0" max="10" step="1" value="3" name="accuracy" oninput="document.getElementById('accuracy').innerHTML = this.value"><span>Знаков после запятой: </span><output id="accuracy">3</output></label>
+				</div>
+				<div class="total wrapper clearfix">
+					<span>Объем (кубометры)<br><b id="volume">3.68</b></span>
+					<span>Сумма<br><b id="summ">15000</b></span>
+					<button type="button" class="btn" name="calculate">Рассчитать</button>
+					<span id="errorMessage"></span>
+				</div>
+			</form>
+		</section>
+		<section class="common">
+			<h2 class="wrapper">Расчет общего количества досок по объему в кубометрах и размерам одной доски</h2>
+			<form name="quantity">
+				<div class="wrapper">
+					<hr>
+					<label>Длина (сантиметры):<br><input type="tel" name="length" placeholder="Введите длину" required></label>
+					<label>Ширина (сантиметры):<br><input type="tel" name="width" placeholder="Введите ширину" required></label>
+					<label>Высота (сантиметры):<br><input type="tel" name="height" placeholder="Введите высоту" required></label>
+					<label>Общий объём (кубов):<br><input type="tel" name="volume" placeholder="Введите количество" required></label>
+				</div>
+				<div class="total wrapper clearfix">
+					<span>Приблизительное число штук:<br><b id="number"></b></span>
+					<button type="button" class="btn" name="calculate">Рассчитать</button>
+					<span id="errorMessage"></span>
+				</div>
+			</form>
+		</section>
+		<section class="square-quantity">
+			<h2 class="wrapper">Расчет площади и количества листов</h2>
+			<form name="squareQuantity">
+				<div class="wrapper">
+					<hr>
+					<label>Длина листа, мм:<br><input type="tel" name="length" placeholder="Введите длину" required></label>
+					<label>Ширина листа, мм:<br><input type="tel" name="width" placeholder="Введите ширину" required></label>
+					<label>Площадь, м<sup>2</sup>:<br><input type="tel" name="square" placeholder="Введите площадь"></label>
+					<label>Число листов, шт.:<br><input type="tel" name="quantity" placeholder="123"></label>
+					<button type="button" class="btn" name="calcByQuantity">Площадь через листы</button>
+					<button type="button" class="btn" name="calcBySquare">Листы через площадь</button>
+					<span id="errorMessage"></span>
+				</div>
+			</form>
+		</section>
+	</main>
+	<script>
+		(function() {
+			var volume = document.forms.volume;
+			var quantity = document.forms.quantity;
+
+			if (!volume || !quantity) return;
+
+			var quantity = document.forms.quantity,
+				units = null,
+				volumeM3 = null;
+
+			function validateVolume(errorMessage) {
+				errorMessage.innerHTML = "";
+
+				if (volume.length.value <= 0) {
+					errorMessage.innerHTML = "Длина должна быть больше нуля";
+					return false;
+				}
+
+				if (volume.width.value <= 0) {
+					errorMessage.innerHTML = "Ширина должна быть больше нуля";
+					return false;
+				}
+
+				if (volume.height.value <= 0) {
+					errorMessage.innerHTML = "Высота должна быть больше нуля";
+					return false;
+				}
+
+				if (volume.quantity.value <= 0) {
+					errorMessage.innerHTML = "Количество должно быть больше нуля";
+					return false;
+				}
+
+				if (volume.price.value <= 0) {
+					errorMessage.innerHTML = "Цена должна быть больше нуля";
+					return false;
+				}
+
+				return true;
+			}
+
+			function validateQuantity(errorMessage) {
+				errorMessage.innerHTML = "";
+
+				if (quantity.length.value <= 0) {
+					errorMessage.innerHTML = "Длина должна быть больше нуля";
+					return false;
+				}
+
+				if (quantity.width.value <= 0) {
+					errorMessage.innerHTML = "Ширина должна быть больше нуля";
+					return false;
+				}
+
+				if (quantity.height.value <= 0) {
+					errorMessage.innerHTML = "Высота должна быть больше нуля";
+					return false;
+				}
+
+				if (quantity.volume.value <= 0) {
+					errorMessage.innerHTML = "Объём должен быть больше нуля";
+					return false;
+				}
+
+				return true;
+			}
+
+			volume.calculate.onclick = function () {
+				if (!validateVolume(document.forms.volume.querySelector('#errorMessage'))) return;
+				if (volume.units[0].checked) units = 1000000;
+				if (volume.units[1].checked) units = 1000000000;
+				volume.querySelector('#volume').textContent = volumeM3 = parseFloat(volume.length.value * volume.width.value * volume.height.value * volume.quantity.value / units).toFixed(volume.accuracy[0].value);
+				volume.querySelector('#summ').textContent = volumeM3 * volume.price.value;
+				return false;
+			}
+
+			quantity.calculate.onclick = function () {
+				if (!validateQuantity(document.forms.quantity.querySelector('#errorMessage'))) return;
+				quantity.querySelector('#number').textContent = Math.floor(quantity.volume.value / (quantity.length.value * quantity.width.value * quantity.height.value / 1000000));
+				console.log(quantity.length.value * quantity.width.value * quantity.height.value / 1000000);
+				return false;
+			}
+		})();
+
+		(function() {
+			var squareQuantity = document.forms.squareQuantity;
+
+			if(!squareQuantity) return;
+
+			function validate() {
+				errorMessage.innerHTML = "";
+
+				if (squareQuantity.length.value <= 0) {
+					errorMessage.innerHTML = "Ширина должна быть больше нуля"; 	
+					return false;
+				}
+
+				if (squareQuantity.width.value <= 0) {
+					errorMessage.innerHTML = "Длина должна быть больше нуля"; 	
+					return false;
+				}
+
+				return true;
+			}
+
+			squareQuantity.calcByQuantity.onclick = function () {
+				if (!validate()) return;
+				squareQuantity.square.value = parseFloat(squareQuantity.width.value * squareQuantity.length.value * squareQuantity.quantity.value / 1000000).toFixed(2);
+				return false;
+			}
+
+			squareQuantity.calcBySquare.onclick = function () {
+				if (!validate()) return;
+				squareQuantity.quantity.value = Math.ceil(squareQuantity.square.value * 1000000 / (squareQuantity.width.value * squareQuantity.length.value));
+				return false;
+			}
+		})()
+	</script>
+</body>
+</html>
